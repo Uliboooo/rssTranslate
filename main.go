@@ -1,12 +1,12 @@
 package main
 
 import (
-	"encoding/json"
+	// "encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
+	// "path/filepath"
 	"strings"
 	"time"
 
@@ -44,7 +44,7 @@ func (c *Contents) Translate() {
 		titleLst += (x.Title + "\n")
 	}
 	model := client.GenerativeModel("gemini-2.5-flash-lite")
-	prompt := fmt.Sprintf("Translate this list to Japanese. Please translate each line independently and output them separated by commas.\n%s", titleLst)
+	prompt := fmt.Sprintf("Translate this list to Japanese. Please translate each line independently and output them separated by '|||'.\n%s", titleLst)
 
 	resp, err := model.GenerateContent(ctx, genai.Text(prompt))
 	if err != nil {
@@ -55,9 +55,11 @@ func (c *Contents) Translate() {
 
 	if len(resp.Candidates) > 0 && resp.Candidates[0].Content != nil {
 		res := fmt.Sprintf("%s", resp.Candidates[0].Content.Parts[0])
-		resLst := strings.Split(res, ",")
+		res = strings.TrimSpace(res)
+		res = strings.TrimSuffix(res, "|||")
+		resLst := strings.Split(res, "|||")
 		for i, x := range resLst {
-			c.Lst[i].Title = x
+			c.Lst[i].Title = strings.TrimSpace(x)
 		}
 	} else {
 		fmt.Printf("gemini not resp")
@@ -124,16 +126,18 @@ func main() {
 	fmt.Println("Translation complete.")
 	fmt.Printf("%s", contens)
 
-	u, err := json.Marshal(contens)
-	if err != nil {
-		fmt.Printf("convertion json error: %v", err)
-		return
-	}
+	//json feature
 
-	current, _ := os.Getwd()
-	fileName := filepath.Join(current, "res.json")
-	e := os.WriteFile(fileName, u, 0644)
-	if e != nil {
-		fmt.Printf("failed to write to file: %v", e)
-	}
+	// u, err := json.Marshal(contens)
+	// if err != nil {
+	// 	fmt.Printf("convertion json error: %v", err)
+	// 	return
+	// }
+
+	// current, _ := os.Getwd()
+	// fileName := filepath.Join(current, "res.json")
+	// e := os.WriteFile(fileName, u, 0644)
+	// if e != nil {
+	// 	fmt.Printf("failed to write to file: %v", e)
+	// }
 }
