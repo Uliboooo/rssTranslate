@@ -2,10 +2,12 @@ package main
 
 import (
 	// "encoding/json"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+
 	// "path/filepath"
 	"strings"
 	"time"
@@ -44,14 +46,14 @@ func (c *Contents) Translate() {
 		titleLst += (x.Title + "\n")
 	}
 	model := client.GenerativeModel("gemini-2.5-flash-lite")
-	prompt := fmt.Sprintf("Translate this list to Japanese. Please translate each line independently and output them separated by '|||'.\n%s", titleLst)
+	prompt := fmt.Sprintf("Translate this list to Japanese. Please translate each line independently and output them separated by '|||' and Only show translated string.\n%s", titleLst)
 
 	resp, err := model.GenerateContent(ctx, genai.Text(prompt))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("-------------------\n%s\n\n\n\n-------------------\n", resp.Candidates[0].Content.Parts[0])
+	// fmt.Printf("-------------------\n%s\n\n\n\n-------------------\n", resp.Candidates[0].Content.Parts[0])
 
 	if len(resp.Candidates) > 0 && resp.Candidates[0].Content != nil {
 		res := fmt.Sprintf("%s", resp.Candidates[0].Content.Parts[0])
@@ -80,7 +82,7 @@ func (c Contents) String() string {
 
 func main() {
 	url := "https://hnrss.org/newest"
-	fmt.Println("Fetching RSS feed from:", url)
+	// fmt.Println("Fetching RSS feed from:", url)
 
 	client := http.Client{
 		Timeout: 10 * time.Second,
@@ -94,7 +96,7 @@ func main() {
 		fmt.Printf("http status error: %s\n", resp.Status)
 		return
 	}
-	fmt.Println("Successfully fetched RSS feed. Parsing feed...")
+	// fmt.Println("Successfully fetched RSS feed. Parsing feed...")
 
 	fp := gofeed.NewParser()
 	feed, err := fp.Parse(resp.Body)
@@ -102,9 +104,9 @@ func main() {
 		fmt.Printf("parse error of feed: %v\n", err)
 		return
 	}
-	fmt.Println("Successfully parsed RSS feed.")
+	// fmt.Println("Successfully parsed RSS feed.")
 
-	fmt.Printf("## feed title: %s\n", feed.Title)
+	// fmt.Printf("## feed title: %s\n", feed.Title)
 
 	var contentsSrc []Content
 	for _, item := range feed.Items {
@@ -121,23 +123,18 @@ func main() {
 	}
 	contens := Contents{contentsSrc}
 
-	fmt.Println("Translating content...")
+	// fmt.Println("Translating content...")
 	contens.Translate()
-	fmt.Println("Translation complete.")
-	fmt.Printf("%s", contens)
+	// fmt.Println("Translation complete.")
+	// fmt.Printf("%s", contens)
 
 	//json feature
 
-	// u, err := json.Marshal(contens)
-	// if err != nil {
-	// 	fmt.Printf("convertion json error: %v", err)
-	// 	return
-	// }
+	u, err := json.MarshalIndent(contens, "", " ")
+	if err != nil {
+		fmt.Printf("convertion json error: %v", err)
+		return
+	}
 
-	// current, _ := os.Getwd()
-	// fileName := filepath.Join(current, "res.json")
-	// e := os.WriteFile(fileName, u, 0644)
-	// if e != nil {
-	// 	fmt.Printf("failed to write to file: %v", e)
-	// }
+	fmt.Printf("%s\n", string(u))
 }
