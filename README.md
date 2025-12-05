@@ -1,6 +1,6 @@
 # rssTranslate
 
-current version: 0.2.0
+current version: 0.2.1
 
 `rssTranslate` is a simple web server that fetches an RSS feed, translates the titles to Japanese using the Gemini API, and displays them on a clean, readable webpage.
 

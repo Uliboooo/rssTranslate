@@ -142,7 +142,7 @@ func RssHandleWithURL(url string) http.HandlerFunc {
 func main() {
 	portShortPtr := flag.Int("p", 58877, "port")
 	urlPtr := flag.String("url", "https://hnrss.org/newest", "rss url")
-	apiURLPtr := flag.String("api", "http://localhost", "api url")
+	apiURLPtr := flag.String("api", "localhost", "api url")
 	flag.Parse()
 
 	http.HandleFunc("/api/rts", RssHandleWithURL(*urlPtr))
