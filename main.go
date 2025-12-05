@@ -1,14 +1,13 @@
 package main
 
 import (
-	// "encoding/json"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
-	// "path/filepath"
 	"strings"
 	"time"
 
@@ -53,8 +52,6 @@ func (c *Contents) Translate() {
 		log.Fatal(err)
 	}
 
-	// fmt.Printf("-------------------\n%s\n\n\n\n-------------------\n", resp.Candidates[0].Content.Parts[0])
-
 	if len(resp.Candidates) > 0 && resp.Candidates[0].Content != nil {
 		res := fmt.Sprintf("%s", resp.Candidates[0].Content.Parts[0])
 		res = strings.TrimSpace(res)
@@ -80,9 +77,8 @@ func (c Contents) String() string {
 	return res
 }
 
-func main() {
+func reJSON() (*Contents, error) {
 	url := "https://hnrss.org/newest"
-	// fmt.Println("Fetching RSS feed from:", url)
 
 	client := http.Client{
 		Timeout: 10 * time.Second,
@@ -90,23 +86,17 @@ func main() {
 
 	resp, err := client.Get(url)
 	if err != nil {
-		fmt.Printf("http reqest error: %v\n", err)
+		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		fmt.Printf("http status error: %s\n", resp.Status)
-		return
+		return nil, err
 	}
-	// fmt.Println("Successfully fetched RSS feed. Parsing feed...")
 
 	fp := gofeed.NewParser()
 	feed, err := fp.Parse(resp.Body)
 	if err != nil {
-		fmt.Printf("parse error of feed: %v\n", err)
-		return
+		return nil, err
 	}
-	// fmt.Println("Successfully parsed RSS feed.")
-
-	// fmt.Printf("## feed title: %s\n", feed.Title)
 
 	var contentsSrc []Content
 	for _, item := range feed.Items {
@@ -119,22 +109,43 @@ func main() {
 		}
 
 		contentsSrc = append(contentsSrc, Content{item.Title, item.Link, pubDate})
-		// contentsSrc = append(contentsSrc, fmt.Sprintf("\ntitle: %s\n  link: %s\n  date: %s\n", item.Title, item.Link, pubDate))
 	}
 	contens := Contents{contentsSrc}
 
-	// fmt.Println("Translating content...")
 	contens.Translate()
-	// fmt.Println("Translation complete.")
 	// fmt.Printf("%s", contens)
 
-	//json feature
+	return &contens, nil
+}
 
-	u, err := json.MarshalIndent(contens, "", " ")
+func statusHandler(w http.ResponseWriter, r *http.Request) {
+	data, err := reJSON()
 	if err != nil {
-		fmt.Printf("convertion json error: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	jsonBytes, err := json.MarshalIndent(*data, "", "  ")
+	if err != nil {
+		// http error 500
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Printf("%s\n", string(u))
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonBytes)
+}
+
+func main() {
+	portShortPtr := flag.Int("p", 58877, "port")
+	flag.Parse()
+
+	http.HandleFunc("/api/rts", statusHandler)
+	port := fmt.Sprintf(":%d", *portShortPtr)
+	fmt.Printf("Server starting on http://localhost%s\n", port)
+
+	err := http.ListenAndServe(port, nil)
+	if err != nil {
+		fmt.Printf("Server failed to start: %v\n", err)
+	}
 }
