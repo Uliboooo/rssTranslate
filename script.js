@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const API_URL = 'http://localhost:8080/api/rts';
+    const API_URL = 'http://localhost:58877/api/rts';
     const contentsList = document.getElementById('contents-list');
 
     const fetchContents = async () => {

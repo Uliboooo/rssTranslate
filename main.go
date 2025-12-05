@@ -77,8 +77,8 @@ func (c Contents) String() string {
 	return res
 }
 
-func reJSON() (*Contents, error) {
-	url := "https://hnrss.org/newest"
+func reJSON(url string) (*Contents, error) {
+	// url := "https://hnrss.org/newest"
 
 	client := http.Client{
 		Timeout: 10 * time.Second,
@@ -118,31 +118,36 @@ func reJSON() (*Contents, error) {
 	return &contens, nil
 }
 
-func statusHandler(w http.ResponseWriter, r *http.Request) {
-	data, err := reJSON()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+func RssHandleWithURL(url string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		data, err := reJSON(url)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 
-	w.Header().Set("Content-Type", "application/json")
-	jsonBytes, err := json.MarshalIndent(*data, "", "  ")
-	if err != nil {
-		// http error 500
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		w.Header().Set("Content-Type", "application/json")
+		jsonBytes, err := json.MarshalIndent(*data, "", "  ")
+		if err != nil {
+			// http error 500
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonBytes)
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsonBytes)
+
+	}
 }
 
 func main() {
 	portShortPtr := flag.Int("p", 58877, "port")
+	urlPtr := flag.String("url", "https://hnrss.org/newest", "rss url")
+	apiURLPtr := flag.String("api", "http://localhost", "api url")
 	flag.Parse()
 
-	http.HandleFunc("/api/rts", statusHandler)
-	port := fmt.Sprintf(":%d", *portShortPtr)
-	fmt.Printf("Server starting on http://localhost%s\n", port)
+	http.HandleFunc("/api/rts", RssHandleWithURL(*urlPtr))
+	port := fmt.Sprintf("%s:%d", *apiURLPtr, *portShortPtr)
+	fmt.Printf("Server starting on %s\n", port)
 
 	err := http.ListenAndServe(port, nil)
 	if err != nil {
