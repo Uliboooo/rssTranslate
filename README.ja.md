@@ -1,5 +1,7 @@
 # rssTranslate
 
+current version: 0.2.0
+
 `rssTranslate`は、RSSフィードを取得し、Gemini APIを使用してタイトルを日本語に翻訳し、クリーンで読みやすいウェブページに表示するシンプルなウェブサーバーです。
 
 ## 前提条件
