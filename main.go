@@ -153,7 +153,7 @@ func main() {
 		if Version == "" {
 			Version = "dev"
 		}
-		fmt.Printf("version:: %s", Version)
+		fmt.Printf("version: %s\n", Version)
 		os.Exit(0)
 	}
 

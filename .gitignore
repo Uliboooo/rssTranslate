@@ -1,4 +1,4 @@
 **/*.json
 rssTranslate
 .DS_Store
-rts
+**rts**
