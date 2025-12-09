@@ -36,6 +36,21 @@ current version: 0.3.0
 2.  **View the application:**
     Open the `index.html` file in your web browser to see the translated RSS feed.
 
+## Usage (cil-mode)
+
+```zsh
+rts -cli | jq -r '.list[] | "title: \(.title)\nlink: \(.link)\n"'
+
+title: iPhoneでコピー、Linuxでペースト。クラウド、macOS不要
+link: https://github.com/Trex099/Velocity-Bridge
+
+title: ナノバナナ
+link: https://imgeditor.co/
+
+title: セガサターンで『グランディア』をプレイする喜び
+link: https://www.segasaturnshiro.com/2025/11/27/the-joy-of-playing-grandia-on-sega-saturn/
+```
+
 ## Configuration
 
 You can customize the server's behavior using command-line flags:
