@@ -139,11 +139,37 @@ func RssHandleWithURL(url string) http.HandlerFunc {
 	}
 }
 
+var Version string
+
 func main() {
 	portShortPtr := flag.Int("p", 58877, "port")
 	urlPtr := flag.String("url", "https://hnrss.org/newest", "rss url")
 	apiURLPtr := flag.String("api", "localhost", "api url")
+	cliModePrt := flag.Bool("cli", false, "enable cli-mode(without api server)")
+	ver := flag.Bool("version", false, "show version")
 	flag.Parse()
+
+	if *ver {
+		if Version == "" {
+			Version = "dev"
+		}
+		fmt.Printf("version:: %s", Version)
+		os.Exit(0)
+	}
+
+	if *cliModePrt {
+		data, err := reJSON(*urlPtr)
+		if err != nil {
+			fmt.Printf("Error %v", err)
+		}
+		jsonB, err := json.MarshalIndent(data, "", "  ")
+		if err != nil {
+			fmt.Printf("Error: %v", err)
+			os.Exit(1)
+		}
+		fmt.Printf("%s", jsonB)
+		os.Exit(0)
+	}
 
 	http.HandleFunc("/api/rts", RssHandleWithURL(*urlPtr))
 	port := fmt.Sprintf("%s:%d", *apiURLPtr, *portShortPtr)

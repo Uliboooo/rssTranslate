@@ -1,6 +1,6 @@
 # rssTranslate
 
-current version: 0.2.1
+current version: 0.3.0
 
 `rssTranslate` is a simple web server that fetches an RSS feed, translates the titles to Japanese using the Gemini API, and displays them on a clean, readable webpage.
 
@@ -13,7 +13,7 @@ current version: 0.2.1
 
 1.  **Clone the repository:**
     ```bash
-    git clone <repository-url>
+    git clone https://github.com/Uliboooo/rssTranslate
     cd rssTranslate
     ```
 
@@ -27,6 +27,7 @@ current version: 0.2.1
 
 1.  **Start the server:**
     Run the following command in the project's root directory:
+
     ```bash
     go run main.go
     ```
@@ -39,14 +40,19 @@ current version: 0.2.1
 
 You can customize the server's behavior using command-line flags:
 
--   `-p`: Set the port for the server.
-    -   Example: `go run main.go -p 8080`
-    -   Default: `58877`
--   `-url`: Specify the RSS feed URL to fetch.
-    -   Example: `go run main.go -url "https://example.com/feed.xml"`
-    -   Default: `https://hnrss.org/newest`
--   `-api`: Set the API URL.
-    -   Default: `http://localhost`
+```
+rts -h
+  -api string
+        api url (default "localhost")
+  -cli
+        enable cli-mode(without api server)
+  -p int
+        port (default 58877)
+  -url string
+        rss url (default "https://hnrss.org/newest")
+  -version
+        show version
+```
 
 ## How it Works
 
